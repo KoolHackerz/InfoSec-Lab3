@@ -1,23 +1,11 @@
-const ENGLISH_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const ALPHABET_SIZE = ENGLISH_ALPHABET.length; // 26
+const ENGLISH_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ,. ";
+const ALPHABET_SIZE = ENGLISH_ALPHABET.length;
 
-class VigenereGammaCipher {
+class OneTimePadCypher {
   constructor() {
     this.initializeElements();
     this.attachEventListeners();
     this.displayWelcomeMessage();
-  }
-
-  // Display encryption analysis
-  displayAnalysis(steps, operation, plaintext, key, result) {
-    const operationName = operation === "encrypt" ? "Encryption" : "Decryption";
-    const normalizedPlain = this.normalizeText(plaintext);
-    const normalizedKey = this.normalizeText(key);
-
-    let html = `
-                <div class="analysis-header">
-                    <h4 style="color: var(--accent-primary); margin-bottom: 1rem;">Description</h4>
-                </div>`;
   }
 
   initializeElements() {
@@ -66,7 +54,7 @@ class VigenereGammaCipher {
   validateEnglishText(text) {
     const hasNonEnglish = text
       .split("")
-      .some((char) => char.match(/[a-zA-Z]/) === null && char.trim() !== "");
+      .some((char) => char.match(/[a-zA-Z., ]/) === null && char.trim() !== "");
     return !hasNonEnglish;
   }
 
@@ -211,13 +199,25 @@ class VigenereGammaCipher {
 
       if (!this.validateEnglishText(plaintext)) {
         this.showError(
-          "Plaintext must contain only English letters and spaces"
+          "Plaintext must contain only English letters, spaces and punctuation"
         );
         return;
       }
 
       if (!key) {
         this.showError("Enter key for encryption");
+        return;
+      }
+
+      if (!this.validateEnglishText(key)) {
+        this.showError(
+          "Key must contain only English letters, spaces and punctuation"
+        );
+        return;
+      }
+
+      if (this.normalizeText(key).length !== this.normalizeText(plaintext).length) {
+        this.showError(`Key length (${this.normalizeText(key).length}) must match text length (${this.normalizeText(plaintext).length})`);
         return;
       }
 
@@ -230,6 +230,7 @@ class VigenereGammaCipher {
         this.showSuccess("Text encrypted successfully!");
       }, 300);
     } catch (error) {
+      console.error("Encryption error:", error);
       this.showError(error.message);
     }
   }
@@ -249,6 +250,18 @@ class VigenereGammaCipher {
         return;
       }
 
+      if (!this.validateEnglishText(key)) {
+        this.showError(
+          "Key must contain only English letters, spaces and punctuation"
+        );
+        return;
+      }
+
+      if (this.normalizeText(key).length !== this.normalizeText(ciphertext).length) {
+        this.showError(`Key length (${this.normalizeText(key).length}) must match text length (${this.normalizeText(plaintext).length})`);
+        return;
+      }
+
       this.showLoading();
 
       setTimeout(() => {
@@ -258,22 +271,40 @@ class VigenereGammaCipher {
         this.showSuccess("Text decrypted successfully!");
       }, 300);
     } catch (error) {
+      console.error("Decryption error:", error);
       this.showError(error.message);
     }
   }
 
   generateRandomKey() {
     const plaintextLength = this.normalizeText(this.plaintextArea.value).length;
-    const keyLength = plaintextLength > 0 ? plaintextLength : 10;
+    if (plaintextLength === 0) {
+      this.showError("Enter text to determine key length");
+      return;
+    }
 
+    const keyLength = plaintextLength;
+
+    // Лінійний конгруэнтний генератор (LCG)
+    // Формула: X(n+1) = (a * X(n) + c) mod m
+    const a = 1664525;    // множник
+    const c = 1013904223; // приріст
+    const m = Math.pow(2, 32); // модуль (2^32)
+    
+    // Ініціалізація зерна (seed) поточним часом
+    let seed = Date.now() % m;
+    
     let randomKey = "";
     for (let i = 0; i < keyLength; i++) {
-      const randomIndex = Math.floor(Math.random() * ALPHABET_SIZE);
+      // Генеруємо наступне значення LCG
+      seed = (a * seed + c) % m;
+      
+      const randomIndex = seed % ALPHABET_SIZE;
       randomKey += this.getCharByIndex(randomIndex);
     }
 
     this.keyArea.value = randomKey;
-    this.showSuccess(`Generated random key with ${keyLength} characters`);
+    this.showSuccess(`Generated random key with ${keyLength} characters using LCG`);
   }
 
   runExample() {
@@ -356,7 +387,7 @@ class VigenereGammaCipher {
         .toISOString()
         .replace(/[:.]/g, "-")
         .slice(0, -5);
-      link.download = `cipher-result-${timestamp}.txt`;
+      link.download = `cypher-result-${timestamp}.txt`;
 
       document.body.appendChild(link);
       link.click();
@@ -378,19 +409,19 @@ class VigenereGammaCipher {
     let html = `
             <div class="analysis-summary">
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-                    <div style="background: var(--bg-primary); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <div style="background: var(--bg-primary); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); overflow: hidden;">
                         <strong style="color: var(--accent-secondary);">Original Text:</strong><br>
-                        <code style="color: var(--text-primary); font-family: 'JetBrains Mono', monospace;">${
+                        <code style="color: var(--text-primary); font-family: 'JetBrains Mono', monospace; word-break: break-all; white-space: pre-wrap; overflow-wrap: break-word; display: block; max-height: 150px; overflow-y: auto;">${
                           operation === "encrypt" ? normalizedPlain : result
                         }</code>
                     </div>
-                    <div style="background: var(--bg-primary); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <div style="background: var(--bg-primary); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); overflow: hidden;">
                         <strong style="color: var(--accent-warning);">Key:</strong><br>
-                        <code style="color: var(--text-primary); font-family: 'JetBrains Mono', monospace;">${normalizedKey}</code>
+                        <code style="color: var(--text-primary); font-family: 'JetBrains Mono', monospace; word-break: break-all; white-space: pre-wrap; overflow-wrap: break-word; display: block; max-height: 150px; overflow-y: auto;">${normalizedKey}</code>
                     </div>
-                    <div style="background: var(--bg-primary); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <div style="background: var(--bg-primary); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); overflow: hidden;">
                         <strong style="color: var(--accent-primary);">Result:</strong><br>
-                        <code style="color: var(--text-primary); font-family: 'JetBrains Mono', monospace;">${
+                        <code style="color: var(--text-primary); font-family: 'JetBrains Mono', monospace; word-break: break-all; white-space: pre-wrap; overflow-wrap: break-word; display: block; max-height: 150px; overflow-y: auto;">${
                           operation === "encrypt" ? result : normalizedPlain
                         }</code>
                     </div>
@@ -516,7 +547,7 @@ class VigenereGammaCipher {
 
     notification.innerHTML = `
             <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="font-size: 1.2rem;">${icons[type]}</span>
+                <span style="font-size: 1.2rem; padding-right: 0.5rem;">${icons[type]}</span>
                 <span>${message}</span>
             </div>
         `;
@@ -547,5 +578,5 @@ document.addEventListener("DOMContentLoaded", () => {
   if (keyArea) keyArea.value = "";
   if (ciphertextArea) ciphertextArea.value = "";
 
-  new VigenereGammaCipher();
+  new OneTimePadCypher();
 });
