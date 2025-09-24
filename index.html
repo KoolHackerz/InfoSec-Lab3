@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vernam Cypher - Encryption/Decryption</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" type="image/x-icon" href="icon.png" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div style="text-align: center; margin-bottom: 2rem; padding: 1rem 0">
+        <h1
+          style="
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #58a6ff, #bc8cff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+            text-shadow: 0 0 20px rgba(88, 166, 255, 0.3);
+          "
+        >
+          Vernam Cypher
+        </h1>
+      </div>
+      <main class="main-content">
+        <section class="cipher-section">
+          <div class="card">
+            <h3>Input</h3>
+
+            <div class="input-group">
+              <label for="plaintext">Input Text:</label>
+              <textarea
+                id="plaintext"
+                placeholder="Enter text to encrypt or decrypt..."
+              ></textarea>
+              <input
+                type="file"
+                id="fileInput"
+                accept=".txt"
+                style="display: none"
+              />
+              <button id="loadFileBtn" class="btn btn-secondary">
+                Load from File
+              </button>
+            </div>
+
+            <div class="input-group">
+              <label for="key">Key (Gamma):</label>
+              <textarea
+                id="key"
+                placeholder="Enter key or generate automatically..."
+              ></textarea>
+              <button id="generateKey" class="btn btn-secondary">
+                Generate Key
+              </button>
+            </div>
+
+            <div class="button-group" style="justify-content: center">
+              <button id="encryptBtn" class="btn btn-primary">Encrypt</button>
+              <button id="decryptBtn" class="btn btn-primary">Decrypt</button>
+              <button id="clearBtn" class="btn btn-danger">Clear</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="analysis-section">
+          <div class="card">
+            <h3>Description</h3>
+            <div id="analysisResult" class="analysis-result">
+              <div style="text-align: center; padding: 2rem">
+                <h4 style="color: var(--accent-primary); margin-bottom: 1rem">
+                  Ready to work!
+                </h4>
+                <p style="color: var(--text-secondary)">
+                  Enter text and key, then choose Encrypt or Decrypt
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="output-section">
+          <div class="card">
+            <h3>Output</h3>
+
+            <div class="input-group">
+              <label for="ciphertext">Result:</label>
+              <textarea
+                disabled
+                id="ciphertext"
+                placeholder="Encryption/decryption result will appear here..."
+                readonly
+                style="
+                  user-select: none;
+                  -webkit-user-select: none;
+                  -moz-user-select: none;
+                  -ms-user-select: none;
+                  cursor: default;
+                  margin-bottom: 0.5rem;
+                "
+              ></textarea>
+              <button id="downloadBtn" class="btn btn-secondary">
+                Download Result
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
